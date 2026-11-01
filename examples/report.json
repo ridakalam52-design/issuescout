@@ -1,0 +1,470 @@
+{
+  "repo": "mozilla-ai/otari",
+  "generated_at": "2026-11-01 09:17 UTC",
+  "engine": "otari",
+  "spend_usd": 0.043402,
+  "notes": [],
+  "batch_trace": [
+    {
+      "role": "embedder",
+      "requested": "alibaba/qwen3-embedding-0.6b",
+      "served_model": "alibaba/qwen3-embedding-0.6b",
+      "cost_usd": 1.2e-05
+    }
+  ],
+  "issues": [
+    {
+      "issue": {
+        "number": 2742,
+        "title": "[BUG] Sign-in on otari.ai says \"wrong email or password\" in private/incognito windows, works in a normal window",
+        "body": "## Description\n\nSigning in to the hosted otari.ai dashboard with a correct email and password fails in a private (incognito) window with \"wrong email or password\". The same credentials work in a normal window.\n\n## Steps to reproduce\n\n1. Open a private/incognito window in a browser and go to the otari.ai sign-in page.\n2. Type the email and password by hand (no autofill or paste) and use the show-password toggle to check what was typed.\n3. Submit. The page says \"wrong email or password\".\n4. Open a normal (non-private) window in the same browser and sign in with the same credentials. This works.\n5. Repeating steps 1-3 in two other browsers gives the same result.\n\n## Expected behavior\n\nSign-in works the same in private and normal windows.\n\n## Notes\n\nReproduced with two different accounts: the organization owner and a member who joined by invitation. Both work in a normal window and fail in private windows, in three browsers (including Safari). I don't know the cause.",
+        "url": "https://github.com/mozilla-ai/otari/issues/2742",
+        "author": "orjinameh",
+        "labels": [
+          "bug"
+        ],
+        "created_at": "2026-11-01T07:03:36Z",
+        "comments": 0
+      },
+      "category": "bug",
+      "labels": [
+        "signin",
+        "private-mode",
+        "authentication"
+      ],
+      "priority": "P1",
+      "rationale": "Sign-in fails in private/incognito mode despite working in normal mode, indicating a core authentication flow issue.",
+      "duplicates": [],
+      "repro": null,
+      "related": [
+        {
+          "title": "Signup, email verification, and password reset · Issue #650 · mozilla-ai/otari",
+          "url": "https://github.com/mozilla-ai/otari/issues/650",
+          "why": "Related auth/sign-in work in the same repo (closed via PR #708); may touch the sign-in path.",
+          "source": "otari_web_search/fetch"
+        }
+      ],
+      "reply": "Thanks for the detailed report, @orjinameh — the steps and the cross-browser, two-account reproduction are genuinely helpful.\n\nTriage: we're treating this as a **bug** (P1) affecting sign-in in private/incognito windows. The pattern — correct credentials rejected only in private mode, across three browsers including Safari — points at something in the sign-in path behaving differently when storage/cookies are restricted, but that's a hypothesis, not a confirmed cause. No known fix yet, and I can't promise a timeline.\n\nI didn't run a repro (none was provided), so nothing has been verified in IssueScout's sandbox.\n\nPossibly related: #650 (signup, email verification, and password reset — https://github.com/mozilla-ai/otari/issues/650), which touches the auth/sign-in path.\n\nTo narrow it down, could you share:\n1. The exact browser versions you tested.\n2. Whether the private window shows any console errors or failed network requests on submit (redact anything sensitive).\n3. Whether the failure also happens if you first load the sign-in page in a normal window, then switch to private.",
+      "guard": {
+        "verdict": "safe",
+        "categories": [],
+        "model": "meta-llama/Llama-Guard-4-12B",
+        "stage": "input",
+        "reply_verdict": "safe"
+      },
+      "trace": [
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.2e-05,
+          "request_id": "5a46cadf-e9e7-434c-ad1d-2c4c628ddf3e"
+        },
+        {
+          "role": "classifier",
+          "requested": "issuescout-classifier",
+          "served_model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "provider": "nebius",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 5.9e-05,
+          "request_id": "c7b0e8b9-0a49-4cf9-ac32-e4194056fd9c"
+        },
+        {
+          "role": "researcher",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010358,
+          "request_id": "a1e205c8-0ba2-49b2-a246-4f9e1e6209e3",
+          "tool_calls": [
+            {
+              "type": "web_search",
+              "status": "completed",
+              "query": "otari.ai sign-in fails in incognito private window wrong email or password",
+              "sources": [
+                "https://github.com/mozilla-ai/otari/issues/650",
+                "https://stackoverflow.com/questions/63631849/google-sign-in-not-working-in-incognito-mode",
+                "https://us.norton.com/blog/how-to/your-connection-is-not-private",
+                "https://kinsta.com/blog/your-connection-is-not-private",
+                "https://www.businessinsider.com/incognito-mode"
+              ]
+            }
+          ]
+        },
+        {
+          "role": "writer",
+          "requested": "issuescout-writer",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000123,
+          "request_id": "3b7a051b-8823-4631-ab07-f786f5d1b3e0"
+        },
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.1e-05,
+          "request_id": "b04910cf-b5d6-4be5-80df-390989dd0cd0"
+        }
+      ]
+    },
+    {
+      "issue": {
+        "number": 2741,
+        "title": "[BUG] Hosted quickstart base URL (api.otari.ai/v1) doesn’t match the API (/api/v1, region-specific host)",
+        "body": "## Description\n\nFollowing the hosted quickstart, I used `https://api.otari.ai/v1` as the base URL. That cannot work against the hosted API.\n\n## Steps to reproduce\n\n1. Create an API key on the hosted otari.ai platform (my key was in the EU region).\n2. Request the model list on the `/v1` URL:\n\n   ```bash\n   curl https://api.otari.ai/v1/models -H \"Authorization: Bearer <key>\"\n   ```\n\n   ```json\n   {\"detail\":\"Otari serves its API under /api/v1, not /v1. Use /api/v1/models instead.\"}\n   ```\n\n3. Use `/api/v1`:\n\n   ```bash\n   curl https://api.otari.ai/api/v1/models -H \"Authorization: Bearer <key>\"\n   ```\n\n   ```json\n   {\"detail\":\"This API key belongs to eu.api.otari.ai. Send the request there instead.\"}\n   ```\n\n4. Use the region host:\n\n   ```bash\n   curl https://eu.api.otari.ai/api/v1/models -H \"Authorization: Bearer <key>\"\n   ```\n\n   This works.\n\n## Expected behavior\n\nThe quickstart and dashboard give a base URL that works: `/api/v1`, on the host for the key's region.\n\n## Suggested fix\n\n- Show the full base URL, including the region host, when a key is created.\n- Use `/api/v1` in the quickstart and mention region hosts.\n\nBoth error messages were clear and I fixed it in minutes, but the docs sent me to a URL that cannot work.",
+        "url": "https://github.com/mozilla-ai/otari/issues/2741",
+        "author": "orjinameh",
+        "labels": [
+          "bug"
+        ],
+        "created_at": "2026-11-01T07:02:47Z",
+        "comments": 0
+      },
+      "category": "bug",
+      "labels": [
+        "api",
+        "docs",
+        "quickstart"
+      ],
+      "priority": "P2",
+      "rationale": "The quickstart documentation provides an incorrect base URL that leads to immediate errors, requiring users to debug region-specific routing.",
+      "duplicates": [],
+      "repro": null,
+      "related": [
+        {
+          "title": "OtariChatGenerator | Haystack Documentation",
+          "url": "https://docs.haystack.deepset.ai/docs/otarichatgenerator",
+          "why": "Third-party integration docs already state the hosted default is https://api.otari.ai/api/v1, confirming the /api/v1 prefix.",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "Use the Otari Gateway with OpenCode (mozilla.ai blog)",
+          "url": "https://blog.mozilla.ai/use-the-otari-gateway-with-opencode",
+          "why": "Official mozilla.ai post showing how the hosted gateway base URL is configured for a client.",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "DeepWiki: base URL / region handling in mozilla-ai/otari",
+          "url": "https://deepwiki.com/search/what-base-url-does-the-hosted_3c746c37-6376-4559-af36-cbe8f36943a1",
+          "why": "Explains /v1 is the self-hosted gateway prefix while /api/v1 is the platform prefix, with PLATFORM_BASE_URL for region hosts.",
+          "source": "model/MCP"
+        }
+      ],
+      "reply": "Thanks for the detailed report, @orjinameh — the curl transcripts make the failure mode very clear.\n\nTriage: this is a **docs bug** (P2, labels: api/docs/quickstart). The quickstart conflates two different base URLs: the self-hosted gateway prefix (`/v1`, e.g. `http://localhost:8000/v1`) and the hosted platform API (`/api/v1`, default `https://api.otari.ai/api/v1`, with region hosts like `eu.api.otari.ai` via `PLATFORM_BASE_URL`). The fix is to document `https://<region>.api.otari.ai/api/v1` in the quickstart and show the full region-specific URL when a key is created. No duplicate issues found. No repro was run in IssueScout's sandbox, since none was attached.\n\nUseful references:\n- [OtariChatGenerator docs](https://docs.haystack.deepset.ai/docs/otarichatgenerator) — confirms the hosted default includes `/api/v1`\n- [mozilla.ai blog: Otari Gateway with OpenCode](https://blog.mozilla.ai/use-the-otari-gateway-with-opencode)\n- [DeepWiki: base URL / region handling](https://deepwiki.com/search/what-base-url-does-the-hosted_3c746c37-6376-4559-af36-cbe8f36943a1)\n\nTo scope the fix, could you share the exact quickstart page/section you followed (URL or heading)?",
+      "guard": {
+        "verdict": "safe",
+        "categories": [],
+        "model": "meta-llama/Llama-Guard-4-12B",
+        "stage": "input",
+        "reply_verdict": "safe"
+      },
+      "trace": [
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000103,
+          "request_id": "f761c15e-cc03-4567-ad30-d662a40f1c23"
+        },
+        {
+          "role": "classifier",
+          "requested": "issuescout-classifier",
+          "served_model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "provider": "nebius",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 7.2e-05,
+          "request_id": "2b709ff5-7d36-4796-a6d6-1384a33d95de"
+        },
+        {
+          "role": "researcher",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010443,
+          "request_id": "4f5cd3bf-b5dd-403e-bf9c-b9b3ca3b6dc0",
+          "tool_calls": [
+            {
+              "type": "web_search",
+              "status": "completed",
+              "query": "otari.ai API base URL /api/v1 quickstart",
+              "sources": [
+                "https://docs.haystack.deepset.ai/docs/otarichatgenerator",
+                "https://blog.mozilla.ai/use-the-otari-gateway-with-opencode",
+                "https://developers.openai.com/api/docs/quickstart",
+                "https://docs.requesty.ai/quickstart",
+                "https://bazaarlink.ai/en/docs"
+              ]
+            }
+          ]
+        },
+        {
+          "role": "writer",
+          "requested": "issuescout-writer",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000188,
+          "request_id": "ab49f428-3793-4e4d-8b8f-4e67bdd3af75"
+        },
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 9.6e-05,
+          "request_id": "09f908d4-ef18-4da7-8de5-eeed4e7e3add"
+        }
+      ]
+    },
+    {
+      "issue": {
+        "number": 2740,
+        "title": "[FEATURE] Faster transcript parsing in the Stop hook command collector",
+        "body": "### Problem or use case\n\nOn every Stop event, the `command` and `command_if_changed` gates read the whole Claude Code transcript. `_hook_collect_transcript_commands` in `cli/src/otari_agent/hook.py` does this. The transcript grows with the session, so this cost grows with it.\n\nMost of the time goes to JSON parsing of each line. The function calls `json.loads` once per line, and before that it calls `line.strip()` to skip blank lines. For each line, `json.loads` checks the argument type and then scans the whole line for whitespace at both ends. Claude Code writes one compact JSON record per line, so these extra steps find nothing.\n\nTimes on one CPU core (Python 3.12):\n\n| Situation | Now |\n| --- | --- |\n| 10,001 Bash calls (the `test_stop_event_submits_no_commands_when_there_are_too_many` transcript) | 25.1 ms |\n| Mixed session, 6,000 lines | 14.1 ms |\n| Short session, 50 lines | 128 us |\n\n### Proposed solution\n\nMake one `json.JSONDecoder` before the loop. Use `raw_decode` for a line that is exactly one JSON value, and use `decode` for all other lines. This keeps which lines parse and which lines are skipped exactly the same. Also read each block's `name` only once, and keep the commands in a plain list so the end of the function can slice it.\n\nIn a local test, this makes the three situations above 26-32% faster. A line with surrounding whitespace becomes slower, but Claude Code does not write such lines. All 153 tests in `tests/unit/test_hook_cli.py` pass.\n\n### Does this belong in Otari?\n\nYes. The change is only in the laptop-side `otari-agent` hook. It does not touch any-llm or any provider call.\n\n### Alternatives considered\n\nKeep `json.loads` and only drop the `strip()` check. That is simpler but gives only about 8-10% on the same transcripts.\n\nEnvironment: Linux x86_64, CPython 3.12 and 3.13, otari at `7228bfb`.\n",
+        "url": "https://github.com/mozilla-ai/otari/issues/2740",
+        "author": "dexhunter",
+        "labels": [],
+        "created_at": "2026-11-01T03:25:10Z",
+        "comments": 0
+      },
+      "category": "feature",
+      "labels": [
+        "performance",
+        "optimization",
+        "cli"
+      ],
+      "priority": "P2",
+      "rationale": "Improves parsing speed of transcript lines without changing behavior, with measurable performance gains on large transcripts.",
+      "duplicates": [],
+      "repro": null,
+      "related": [
+        {
+          "title": "json — JSON encoder and decoder — Python documentation",
+          "url": "https://docs.python.org/3/library/json.html",
+          "why": "Documents JSONDecoder.raw_decode/decode semantics the proposal relies on (raw_decode returns value plus end index, doesn't require whole-string consumption).",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "Python 2.6 JSON decoding performance (Stack Overflow)",
+          "url": "https://stackoverflow.com/questions/706101/python-2-6-json-decoding-performance",
+          "why": "Prior discussion of reusing a decoder / avoiding per-call overhead in json.loads, relevant to the proposed micro-optimization.",
+          "source": "otari_web_search/fetch"
+        }
+      ],
+      "reply": "Thanks for the detailed write-up and the profiling numbers — this is a well-scoped performance proposal.\n\nTriage outcome: I'm treating this as a **feature/optimization request (P2)** with `performance`, `optimization`, and `cli` labels. No duplicates found so far. There's no upstream fix, so the approach you describe is the one on the table. Two references that back the design: the [`json` module docs](https://docs.python.org/3/library/json.html) (on `raw_decode` returning value + end index without requiring full-string consumption) and this [prior discussion of JSON decoding overhead](https://stackoverflow.com/questions/706101/python-2-6-json-decoding-performance).\n\nOne caveat: I couldn't verify the code path — the indexed source doesn't appear to include `cli/src/otari_agent/hook.py`, and there's no repro to run in the sandbox.\n\nTo move this forward, could you share:\n1. A minimal repro or the exact command/transcript fixture used for the timings.\n2. Confirmation of the Python version(s) you'd want this validated against.\n\nNo timeline promised, but this looks reasonable.",
+      "guard": {
+        "verdict": "safe",
+        "categories": [],
+        "model": "meta-llama/Llama-Guard-4-12B",
+        "stage": "input",
+        "reply_verdict": "safe"
+      },
+      "trace": [
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000124,
+          "request_id": "6e20b4b1-050c-4252-adb8-0ffb9349b602"
+        },
+        {
+          "role": "classifier",
+          "requested": "issuescout-classifier",
+          "served_model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "provider": "nebius",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.4e-05,
+          "request_id": "84193c4c-0cf6-47d2-a842-8d2da58c7108"
+        },
+        {
+          "role": "researcher",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010352,
+          "request_id": "5683f47f-a0a0-44b7-a885-eb00027b13af",
+          "tool_calls": [
+            {
+              "type": "web_search",
+              "status": "completed",
+              "query": "Python json raw_decode faster than loads per line JSONDecoder reuse performance",
+              "sources": [
+                "https://stackoverflow.com/questions/706101/python-2-6-json-decoding-performance",
+                "https://docs.python.org/3/library/json.html",
+                "https://pythonspeed.com/articles/json-memory-streaming",
+                "https://superjson.ai/blog/2025-09-07-optimizing-large-json-files-production",
+                "https://realpython.com/python-json"
+              ]
+            }
+          ]
+        },
+        {
+          "role": "writer",
+          "requested": "issuescout-writer",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000155,
+          "request_id": "38942a08-77da-4e5f-a4a7-444cc1b22e1a"
+        },
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.2e-05,
+          "request_id": "faaab013-d237-4fe9-a329-fe63928cb9ab"
+        }
+      ]
+    },
+    {
+      "issue": {
+        "number": 2738,
+        "title": "[FEATURE] feat(gateway): Support X-Otari-End-User-Id header for multi-tenant per-end-user budget caps and guardrail telemetry headers",
+        "body": "### Context (MozFest 2026 Hackathon — TinyFlow AI)\nWhile migrating **TinyFlow AI** (a multi-agent open-weight code review pipeline using `alibaba/qwen3.5-9b`, `alibaba/qwen3-32b`, `alibaba/qwen3.6-35b-a3b`, and `alibaba/qwen3-embedding-0.6b`) to `https://api.otari.ai/v1`, we implemented per-user budget caps and pre-flight secret guardrails for end-users testing our app.\n\n### Friction / Glue Code Written\n1. **Multi-Tenant End-User Budgets via Single Server Key:** In a web application where end-users don't have their own Otari workspace account, requests authenticate with our server's `OTARI_API_KEY`. To prevent a single visitor from exhausting our workspace budget, we had to write custom middleware tracking token cost per `userId` and returning `HTTP 429 Budget Exceeded` when a user hits `$0.50`.\n2. **Reasoning Token (`<think>`) Stripping on Structured JSON Outputs:** When calling open-weight reasoning models (`alibaba/qwen3-32b` / `qwen3.6-35b-a3b`) for structured specialist JSON, we wrote glue code to strip reasoning blocks and markdown fences before Zod validation.\n\n### Proposal\n1. Allow passing an `X-Otari-End-User-Id` (or OpenAI `user` field) paired with a configurable \"Per-End-User Daily/Total Spend Cap\" in the Otari Spend & Budgets dashboard, returning a native `429 end_user_budget_exceeded` error when breached.\n2. Include response headers (e.g., `x-otari-cost-usd`, `x-otari-provider-used`, `x-otari-guardrail-triggered`) on `/v1/chat/completions` responses so apps can stream live audit receipts to users without estimating token pricing client-side.",
+        "url": "https://github.com/mozilla-ai/otari/issues/2738",
+        "author": "sanjaysah101",
+        "labels": [
+          "enhancement"
+        ],
+        "created_at": "2026-10-31T19:24:47Z",
+        "comments": 0
+      },
+      "category": "feature",
+      "labels": [
+        "feature",
+        "multi-tenant",
+        "budgeting",
+        "telemetry"
+      ],
+      "priority": "P1",
+      "rationale": "Enables critical multi-tenant support and observability for production-grade AI applications.",
+      "duplicates": [],
+      "repro": null,
+      "related": [
+        {
+          "title": "Otari: Own Your AI Stack (blog)",
+          "url": "https://blog.mozilla.ai/otari-own-your-ai-stack",
+          "why": "Official announcement describing Otari's usage tracking, budget controls and routing policies — relevant to the per-user budget part of the request.",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "Cloudflare AI Gateway spend limits",
+          "url": "https://developers.cloudflare.com/ai-gateway/features/spend-limits",
+          "why": "Prior art: cost-based spend limits scoped by custom metadata like user ID, returning 429 when exceeded.",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "LangChain LLM Gateway spend policies",
+          "url": "https://docs.langchain.com/langsmith/llm-gateway-spend-policies",
+          "why": "Prior art: per-user/API-key spend caps over time windows with blocked-request errors.",
+          "source": "otari_web_search/fetch"
+        }
+      ],
+      "reply": "Thanks for the detailed write-up, @sanjaysah101 — the TinyFlow AI context and the glue-code list make the request easy to follow.\n\nTriage outcome: we're treating this as a **feature request** (P1) covering two parts — per-end-user budget caps and response telemetry headers. No duplicate issues were found.\n\nSome of this may already be partly covered: Otari's budget system (Reserve-Reconcile-Refund) supports per-user `max_budget`/`budget_duration_sec`, and the OpenAI `user` field is used for spend tracking (with `reject_user_mismatch` controlling whether a non-master key may bill another user). What doesn't exist yet is the `X-Otari-End-User-Id` header and the `x-otari-cost-usd` / `x-otari-provider-used` / `x-otari-guardrail-triggered` response headers. Related prior art worth a look:\n- [Otari: Own Your AI Stack](https://blog.mozilla.ai/otari-own-your-ai-stack)\n- [Cloudflare AI Gateway spend limits](https://developers.cloudflare.com/ai-gateway/features/spend-limits)\n- [LangChain LLM Gateway spend policies](https://docs.langchain.com/langsmith/llm-gateway-spend-policies)\n\nTo scope this, could you share: (1) the exact middleware/request shape you use today, and (2) whether the OpenAI `user` field alone would meet your needs, or the dedicated header is required?",
+      "guard": {
+        "verdict": "safe",
+        "categories": [],
+        "model": "meta-llama/Llama-Guard-4-12B",
+        "stage": "input",
+        "reply_verdict": "safe"
+      },
+      "trace": [
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000116,
+          "request_id": "d914a081-c7f2-4b68-99d0-3240be96325a"
+        },
+        {
+          "role": "classifier",
+          "requested": "issuescout-classifier",
+          "served_model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "provider": "nebius",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.1e-05,
+          "request_id": "6c930147-d45a-4f68-ad6e-f8b77664551c"
+        },
+        {
+          "role": "researcher",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010501,
+          "request_id": "f0ed7eec-6595-496d-9c83-919aa1bfd43e",
+          "tool_calls": [
+            {
+              "type": "web_search",
+              "status": "completed",
+              "query": "mozilla-ai otari gateway budget per-user spend cap headers",
+              "sources": [
+                "https://docs.langchain.com/langsmith/llm-gateway-spend-policies",
+                "https://blog.mozilla.ai/otari-own-your-ai-stack",
+                "https://www.truefoundry.com/blog/ai-gateway-budgets-quotas",
+                "https://developers.cloudflare.com/ai-gateway/features/spend-limits",
+                "https://agentgateway.dev/docs/standalone/latest/documentation/llm/cost-controls/budget-limits"
+              ]
+            }
+          ]
+        },
+        {
+          "role": "writer",
+          "requested": "issuescout-writer",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000195,
+          "request_id": "7ff0bf14-21b0-4259-9299-e97d24d22f67"
+        },
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 9.5e-05,
+          "request_id": "24111ab5-91cd-486c-a37f-df9d2c388e02"
+        }
+      ]
+    }
+  ]
+}

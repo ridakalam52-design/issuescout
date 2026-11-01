@@ -1,0 +1,138 @@
+{
+  "repo": "borntyping/python-colorlog",
+  "generated_at": "2026-11-01 09:17 UTC",
+  "engine": "otari",
+  "spend_usd": 0.021041,
+  "notes": [],
+  "batch_trace": [],
+  "issues": [
+    {
+      "issue": {
+        "number": 143,
+        "title": "Cached exception colors leak into no_color and standard formatters",
+        "body": "On Python 3.13+, formatting the same exception record for a colored console and a plain handler makes the result depend on handler order. If the colored formatter runs first, ANSI traceback codes appear in `no_color=True` output and in a standard `logging.Formatter`.\n\nReproduced with colorlog 6.12.0/current `main` (`868b53d3`) on Python 3.13.14, without `FORCE_COLOR` or `NO_COLOR` environment variables:\n\n```python\nimport logging\nimport sys\nimport colorlog\n\ntry:\n    raise ValueError(\"example failure\")\nexcept ValueError:\n    record = logging.LogRecord(\n        \"example\", logging.ERROR, \"example.py\", 1, \"failed\", (), sys.exc_info()\n    )\n\ncolored = colorlog.ColoredFormatter(\"%(message)s\", force_color=True)\nplain = colorlog.ColoredFormatter(\"%(message)s\", no_color=True)\ncolored.format(record)\noutput = plain.format(record)\nassert \"\\x1b[\" not in output  # Fails: the traceback still contains ANSI codes.\n```\n\nReplacing `plain` with `logging.Formatter(\"%(message)s\")` has the same result. In the reverse order, the colored formatter reuses the plain traceback instead of applying its requested colors.\n\n`logging.Formatter.format` caches `formatException`'s result in `record.exc_text`. That cache is shared by all handlers, whereas traceback color depends on each formatter's color settings. The handlers should format their exception output independently while retaining exception text for code that forwards log records.\n",
+        "url": "https://github.com/borntyping/python-colorlog/issues/143",
+        "author": "nk-batman21",
+        "labels": [],
+        "created_at": "2026-10-20T06:25:22Z",
+        "comments": 0
+      },
+      "category": "bug",
+      "labels": [
+        "colorlog",
+        "exception",
+        "formatter",
+        "bug"
+      ],
+      "priority": "P1",
+      "rationale": "The issue breaks core logging functionality by leaking colored exception formatting into non-color contexts due to shared caching of exception text.",
+      "duplicates": [],
+      "repro": {
+        "ran": true,
+        "reproduced": true,
+        "summary": "After formatting with force_color, the no_color formatter's output still contains ANSI escapes (e.g. '\\x1b[35m' in the traceback), so the assertion fails with AssertionError.",
+        "sandbox_billed": true,
+        "tool": "otari_code_execution",
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017"
+      },
+      "related": [
+        {
+          "title": "logging — Logging facility for Python (Formatter.format / exc_text caching)",
+          "url": "https://docs.python.org/3/library/logging.html",
+          "why": "Documents that Formatter.format caches formatException output in record.exc_text, the shared cache behind this bug.",
+          "source": "otari_web_search/fetch"
+        },
+        {
+          "title": "borntyping/python-colorlog",
+          "url": "https://github.com/borntyping/python-colorlog",
+          "why": "Upstream repo where ColoredFormatter.formatException/_colorize live; place to check for a fix or PR.",
+          "source": "otari_web_search/fetch"
+        }
+      ],
+      "reply": "Thanks for the detailed report and the minimal repro — very helpful.\n\nI ran the repro in IssueScout's sandbox (not on a maintainer's machine), and it reproduces: after the `force_color` formatter runs, the `no_color` formatter's output still contains ANSI escapes (e.g. `\\x1b[35m` in the traceback), so the assertion fails with `AssertionError`. I've triaged this as a P1 bug under the `colorlog`/`exception`/`formatter` labels.\n\nYour diagnosis matches what I see: `logging.Formatter.format` caches `formatException` output in `record.exc_text`, and that cache is shared across handlers even though traceback coloring is per-formatter. The usual workaround is to clear the cache per formatter (e.g. `record.exc_text = None` before formatting, or override `format` to avoid reusing `exc_text`). No upstream fix is confirmed yet.\n\nUseful references: the Python logging docs on `Formatter.format`/`exc_text` caching (https://docs.python.org/3/library/logging.html) and the upstream repo (https://github.com/borntyping/python-colorlog).\n\nTo confirm scope: does this also occur when the two formatters are attached to separate handlers on the same logger, and on Python 3.12 or earlier?",
+      "guard": {
+        "verdict": "safe",
+        "categories": [],
+        "model": "meta-llama/Llama-Guard-4-12B",
+        "stage": "input",
+        "reply_verdict": "safe"
+      },
+      "trace": [
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 9.8e-05,
+          "request_id": "5dd2b4da-1215-4271-8d4f-aa01e1182f5a"
+        },
+        {
+          "role": "classifier",
+          "requested": "issuescout-classifier",
+          "served_model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "provider": "nebius",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 7e-05,
+          "request_id": "80397e6d-5f9b-4e2c-9b4c-9436068603a9"
+        },
+        {
+          "role": "reproducer",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010192,
+          "request_id": "e08cd5b7-e98d-4c17-9f9f-a31567cdd963"
+        },
+        {
+          "role": "researcher",
+          "requested": "deepseek/deepseek-v4.1-flash-1017",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.010425,
+          "request_id": "7ff9dc99-28d1-432c-9d8a-b0ac90662bae",
+          "tool_calls": [
+            {
+              "type": "web_search",
+              "status": "completed",
+              "query": "python logging Formatter exc_text cache shared handlers colorlog traceback color leak",
+              "sources": [
+                "https://docs.python.org/3/library/logging.html",
+                "https://github.com/borntyping/python-colorlog",
+                "https://alexandra-zaharia.github.io/posts/make-your-own-custom-color-formatter-with-python-logging",
+                "https://www.youtube.com/watch?v=KSQ4KxCtsf8",
+                "https://www.dash0.com/guides/logging-in-python"
+              ]
+            }
+          ]
+        },
+        {
+          "role": "writer",
+          "requested": "issuescout-writer",
+          "served_model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 0.000168,
+          "request_id": "43c4966f-3a01-4c0a-be04-848668384851"
+        },
+        {
+          "role": "guard",
+          "requested": "meta/llama-guard-4-12b",
+          "served_model": "meta-llama/Llama-Guard-4-12B",
+          "provider": "deepinfra",
+          "fallback": "false",
+          "attempts": "1",
+          "cost_usd": 8.8e-05,
+          "request_id": "ef9ff26a-9224-43d9-903f-0e9806c0facf"
+        }
+      ]
+    }
+  ]
+}

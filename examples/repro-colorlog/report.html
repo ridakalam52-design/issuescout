@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset='utf-8'><title>IssueScout: borntyping/python-colorlog</title><style>
+body{font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;color:#1b1b1f;background:#fafafa}
+h1{font-size:1.5rem}h2{font-size:1.15rem;margin:0 0 .4rem}
+.meta{color:#555}.card{background:#fff;border:1px solid #e3e3e8;border-radius:10px;padding:1rem 1.2rem;margin:1rem 0}
+.pill{display:inline-block;border-radius:999px;padding:.05rem .6rem;font-size:.8rem;margin-right:.3rem;background:#eef}
+.bug{background:#fde2e2}.feature{background:#e1f5e8}.question{background:#e6eefc}.docs{background:#fff4d6}.duplicate{background:#eee}
+.P0,.P1{background:#d93636;color:#fff}.P2{background:#f0a020;color:#fff}.P3{background:#9aa}
+blockquote{margin:.5rem 0;padding:.6rem .9rem;background:#f4f4f8;border-left:3px solid #7a7aff;white-space:pre-wrap}
+table{border-collapse:collapse;font-size:.8rem}td,th{border:1px solid #ddd;padding:.2rem .4rem}
+</style></head><body>
+<h1>IssueScout triage report: borntyping/python-colorlog</h1>
+<p class='meta'>Generated 2026-11-01 09:17 UTC · engine: <b>otari</b> · dry run · spend $0.0210</p>
+<div class='card'>
+<h2><a href='https://github.com/borntyping/python-colorlog/issues/143'>#143</a> Cached exception colors leak into no_color and standard formatters</h2>
+<span class='pill bug'>bug</span><span class='pill P1'>P1</span><span class='pill'>colorlog</span><span class='pill'>exception</span><span class='pill'>formatter</span><span class='pill'>bug</span>
+<p><b>Why:</b> The issue breaks core logging functionality by leaking colored exception formatting into non-color contexts due to shared caching of exception text.</p>
+<p><b>Guardrail:</b> safe <span class='meta'>(meta-llama/Llama-Guard-4-12B)</span></p>
+<p><b>Repro (Otari sandbox, deepseek-ai/DeepSeek-V4.1-Flash-1017):</b> reproduced: After formatting with force_color, the no_color formatter&#x27;s output still contains ANSI escapes (e.g. &#x27;\x1b[35m&#x27; in the traceback), so the assertion fails with AssertionError.</p>
+<p><b>Related docs / known fixes:</b></p><ul><li><a href='https://docs.python.org/3/library/logging.html'>logging — Logging facility for Python (Formatter.format / exc_text caching)</a> Documents that Formatter.format caches formatException output in record.exc_text, the shared cache behind this bug.</li><li><a href='https://github.com/borntyping/python-colorlog'>borntyping/python-colorlog</a> Upstream repo where ColoredFormatter.formatException/_colorize live; place to check for a fix or PR.</li></ul>
+<p><b>Draft reply</b></p><blockquote>Thanks for the detailed report and the minimal repro — very helpful.
+
+I ran the repro in IssueScout&#x27;s sandbox (not on a maintainer&#x27;s machine), and it reproduces: after the `force_color` formatter runs, the `no_color` formatter&#x27;s output still contains ANSI escapes (e.g. `\x1b[35m` in the traceback), so the assertion fails with `AssertionError`. I&#x27;ve triaged this as a P1 bug under the `colorlog`/`exception`/`formatter` labels.
+
+Your diagnosis matches what I see: `logging.Formatter.format` caches `formatException` output in `record.exc_text`, and that cache is shared across handlers even though traceback coloring is per-formatter. The usual workaround is to clear the cache per formatter (e.g. `record.exc_text = None` before formatting, or override `format` to avoid reusing `exc_text`). No upstream fix is confirmed yet.
+
+Useful references: the Python logging docs on `Formatter.format`/`exc_text` caching (https://docs.python.org/3/library/logging.html) and the upstream repo (https://github.com/borntyping/python-colorlog).
+
+To confirm scope: does this also occur when the two formatters are attached to separate handlers on the same logger, and on Python 3.12 or earlier?</blockquote>
+<details><summary>Otari gateway trace</summary><table><tr><th>role</th><th>requested (model or routing policy)</th><th>served by</th><th>provider</th><th>fallback</th><th>Otari tools</th><th>cost USD</th></tr><tr><td>guard</td><td>meta/llama-guard-4-12b</td><td>meta-llama/Llama-Guard-4-12B</td><td>deepinfra</td><td>false</td><td>-</td><td>9.8e-05</td></tr><tr><td>classifier</td><td>issuescout-classifier</td><td>Qwen/Qwen3-30B-A3B-Instruct-2507</td><td>nebius</td><td>false</td><td>-</td><td>7e-05</td></tr><tr><td>reproducer</td><td>deepseek/deepseek-v4.1-flash-1017</td><td>deepseek-ai/DeepSeek-V4.1-Flash-1017</td><td>deepinfra</td><td>false</td><td>-</td><td>0.010192</td></tr><tr><td>researcher</td><td>deepseek/deepseek-v4.1-flash-1017</td><td>deepseek-ai/DeepSeek-V4.1-Flash-1017</td><td>deepinfra</td><td>false</td><td>web_search: python logging Formatter exc_text cache shared handlers colorlog traceback color leak</td><td>0.010425</td></tr><tr><td>writer</td><td>issuescout-writer</td><td>deepseek-ai/DeepSeek-V4.1-Flash-1017</td><td>deepinfra</td><td>false</td><td>-</td><td>0.000168</td></tr><tr><td>guard</td><td>meta/llama-guard-4-12b</td><td>meta-llama/Llama-Guard-4-12B</td><td>deepinfra</td><td>false</td><td>-</td><td>8.8e-05</td></tr></table></details>
+</div>
+<p class='meta'>Made with IssueScout · drafts only, a human maintainer decides.</p></body></html>
