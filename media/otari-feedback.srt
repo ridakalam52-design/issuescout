@@ -1,0 +1,219 @@
+1
+00:00:00,591 --> 00:00:05,489
+This is my feedback on Mozilla Otari, from building IssueScout on the hosted gateway
+
+2
+00:00:05,489 --> 00:00:09,170
+over the hackathon. I'll cover what I built, what worked, what didn't,
+
+3
+00:00:09,170 --> 00:00:09,784
+and what's missing.
+
+4
+00:00:11,624 --> 00:00:16,295
+What I built: IssueScout, an open-source GitHub issue-triage agent where every model
+
+5
+00:00:16,295 --> 00:00:20,011
+call goes through Otari. I used most of the feature set:
+
+6
+00:00:20,011 --> 00:00:23,715
+open-weight models in six roles, routing policies with fallbacks,
+
+7
+00:00:23,715 --> 00:00:29,795
+built-in web search and web fetch, a DeepWiki MCP server, sandboxed code execution,
+
+8
+00:00:29,795 --> 00:00:33,363
+workspace and per-member budgets, and per-user tagging for spend attribution.
+
+9
+00:00:35,191 --> 00:00:39,952
+What worked well. One request combining web search, web fetch and an MCP server
+
+10
+00:00:39,952 --> 00:00:43,532
+worked on the first try, with Otari running the whole tool loop.
+
+11
+00:00:43,532 --> 00:00:48,191
+The Otari-Model, Provider, Fallback and Attempt-Count headers on every response made
+
+12
+00:00:48,191 --> 00:00:52,861
+a per-call trace trivial. Routing policy names work as a drop-in model value.
+
+13
+00:00:52,861 --> 00:00:57,214
+DeepSeek V4.1 Flash drove the code sandbox first time.
+
+14
+00:00:57,214 --> 00:01:01,270
+And every open model, from a tiny embedder to Llama Guard to DeepSeek,
+
+15
+00:01:01,270 --> 00:01:03,259
+sits behind one key and one bill.
+
+16
+00:01:05,080 --> 00:01:07,864
+What didn't work. First, the first ten minutes.
+
+17
+00:01:07,864 --> 00:01:12,545
+The hosted quickstart says api dot otari dot ai slash v1.
+
+18
+00:01:12,545 --> 00:01:18,091
+That returns a 404. The working base URL is slash api slash v1.
+
+19
+00:01:18,091 --> 00:01:21,523
+The error message is clear, but when your very first curl fails,
+
+20
+00:01:21,523 --> 00:01:24,739
+you're tempted to go back to a provider SDK you already trust.
+
+21
+00:01:26,569 --> 00:01:31,705
+Second, code execution. On Chat Completions, otari tool calls lists web searches and
+
+22
+00:01:31,705 --> 00:01:36,126
+fetches, but not sandbox runs. A model can claim it ran your code without running
+
+23
+00:01:36,126 --> 00:01:38,433
+anything, so I check billing to prove it.
+
+24
+00:01:38,433 --> 00:01:41,558
+And not every tool-capable model drives the sandbox.
+
+25
+00:01:41,558 --> 00:01:45,535
+Qwen3 Coder was routed to Bedrock and failed with a toolConfig error.
+
+26
+00:01:45,535 --> 00:01:49,171
+Codestral just replied with the literal text code execution.
+
+27
+00:01:49,171 --> 00:01:50,728
+Both are listed as supporting tools.
+
+28
+00:01:52,603 --> 00:01:57,637
+Third, guardrails. Otari serves Llama Guard 4 and Qwen3Guard as models,
+
+29
+00:01:57,637 --> 00:02:02,887
+but every hosted guardrail needs a third-party vendor key, like Lakera or Patronus.
+
+30
+00:02:02,887 --> 00:02:07,376
+A request-level prompt-injection guardrail came back with valid set to null and no
+
+31
+00:02:07,376 --> 00:02:11,399
+explanation, and the moderations endpoint said Llama Guard wasn't found.
+
+32
+00:02:11,399 --> 00:02:15,705
+So my guardrail is my own code, running Llama Guard as an ordinary chat completion.
+
+33
+00:02:17,592 --> 00:02:22,137
+Fourth, credits. The twenty-dollar hackathon credit was never applied to my account.
+
+34
+00:02:22,137 --> 00:02:24,239
+I only had the two-dollar welcome credit.
+
+35
+00:02:24,239 --> 00:02:28,444
+Gateway tools cost a cent per call, about a hundred times a small-model request,
+
+36
+00:02:28,444 --> 00:02:33,114
+so a tool-heavy agent burns through two dollars fast, and I had to cap every run.
+
+37
+00:02:33,114 --> 00:02:37,467
+A workspace key also can't read its own remaining budget, so the app only finds out
+
+38
+00:02:37,467 --> 00:02:38,512
+from a 402.
+
+39
+00:02:40,358 --> 00:02:44,710
+Smaller things. Web search and web fetch are off by default, and the error doesn't
+
+40
+00:02:44,710 --> 00:02:49,096
+say where to turn them on. Web fetch rejects max uses, even though web search
+
+41
+00:02:49,096 --> 00:02:54,608
+accepts it. An MCP allowed-tools list with one wrong tool name silently exposed zero
+
+42
+00:02:54,608 --> 00:02:57,551
+tools, and the model confidently made up an answer.
+
+43
+00:02:57,551 --> 00:03:01,221
+And the docs say routing policies only work with your own provider keys,
+
+44
+00:03:01,221 --> 00:03:04,596
+while the dashboard happily built working policies from managed models.
+
+45
+00:03:06,424 --> 00:03:10,083
+What's missing. Code-execution calls in otari tool calls.
+
+46
+00:03:10,083 --> 00:03:12,890
+A remaining-budget header that a workspace key can read.
+
+47
+00:03:12,890 --> 00:03:15,481
+An open-model guardrail with no vendor key.
+
+48
+00:03:15,481 --> 00:03:19,061
+Budgets per end user of my app, not just per workspace member.
+
+49
+00:03:19,061 --> 00:03:23,481
+A request-level fallback list. A flag in the models list for which models reliably
+
+50
+00:03:23,481 --> 00:03:26,356
+drive gateway tools. And docs that agree with each other.
+
+51
+00:03:28,191 --> 00:03:32,361
+Would I keep using Otari? For agent-style apps like this, probably yes.
+
+52
+00:03:32,361 --> 00:03:38,180
+Search, fetch, sandbox and MCP behind one OpenAI-compatible endpoint replaced three
+
+53
+00:03:38,180 --> 00:03:41,077
+integrations I'd otherwise build and pay for.
+
+54
+00:03:41,077 --> 00:03:43,316
+Fix those gaps and it's a clear yes.
+
+55
+00:03:43,316 --> 00:03:43,918
+Thanks for watching.

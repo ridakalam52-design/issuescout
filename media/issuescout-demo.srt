@@ -1,0 +1,275 @@
+1
+00:00:00,594 --> 00:00:04,663
+This is IssueScout, my entry for the Mozilla Otari hackathon.
+
+2
+00:00:04,663 --> 00:00:09,462
+It's an open-source agent that triages GitHub issues using only open-weight models,
+
+3
+00:00:09,462 --> 00:00:11,856
+and every single model call goes through Otari.
+
+4
+00:00:13,691 --> 00:00:17,214
+Maintainers spend hours every week on first-pass triage.
+
+5
+00:00:17,214 --> 00:00:20,168
+Is it a bug? A duplicate? Does it reproduce?
+
+6
+00:00:20,168 --> 00:00:24,486
+Is there already a fix? IssueScout does that first pass, and never writes to your
+
+7
+00:00:24,486 --> 00:00:25,793
+repo unless you tell it to.
+
+8
+00:00:27,647 --> 00:00:31,442
+Here's the pipeline: six roles, each with its own model chain,
+
+9
+00:00:31,442 --> 00:00:36,533
+behind one Otari key. Llama Guard 4 screens the untrusted issue text.
+
+10
+00:00:36,533 --> 00:00:38,988
+Qwen3 Embedding finds duplicates.
+
+11
+00:00:38,988 --> 00:00:44,306
+Qwen3 30B A3B classifies the issue, with labels and a priority,
+
+12
+00:00:44,306 --> 00:00:50,545
+in JSON mode. DeepSeek V4.1 Flash reproduces bugs in Otari's code sandbox,
+
+13
+00:00:50,545 --> 00:00:55,658
+and researches with Otari web search, web fetch, and a DeepWiki MCP server.
+
+14
+00:00:55,658 --> 00:00:58,783
+A writer drafts the reply, and the guard checks the draft again.
+
+15
+00:01:00,624 --> 00:01:04,613
+Let's run it for real. issuescout doctor asks Otari which built-in tools this
+
+16
+00:01:04,613 --> 00:01:09,590
+workspace has: web fetch, web search and code execution are all ok.
+
+17
+00:01:09,590 --> 00:01:11,772
+Then it prints each role's model chain.
+
+18
+00:01:11,772 --> 00:01:15,442
+The classifier and writer chains start with Otari routing policies,
+
+19
+00:01:15,442 --> 00:01:16,715
+not raw model names.
+
+20
+00:01:18,569 --> 00:01:23,717
+The classifier policy routes Qwen3 30B, falling back to Ministral 8B.
+
+21
+00:01:23,717 --> 00:01:30,080
+The writer policy routes DeepSeek V4.1 Flash, falling back to Qwen3 235B.
+
+22
+00:01:30,080 --> 00:01:34,376
+Otari does that failover server-side and reports it in the Otari-Fallback header.
+
+23
+00:01:36,191 --> 00:01:40,373
+If a policy is missing or a model is refused, the client walks the rest of the
+
+24
+00:01:40,373 --> 00:01:44,157
+chain. From every response it records the serving model, provider,
+
+25
+00:01:44,157 --> 00:01:48,168
+fallback flag, attempt count, cost, and Otari tool calls.
+
+26
+00:01:48,168 --> 00:01:49,816
+That's the trace you'll see in the report.
+
+27
+00:01:51,658 --> 00:01:55,453
+Now a live run on the two newest issues in Otari's own repo.
+
+28
+00:01:55,453 --> 00:01:58,464
+It's a dry run, so GitHub is only read.
+
+29
+00:01:58,464 --> 00:02:03,089
+The user flag tags every request for per-user attribution, and max spend is a
+
+30
+00:02:03,089 --> 00:02:06,646
+client-side cap. The real run took about fifty seconds:
+
+31
+00:02:06,646 --> 00:02:08,930
+eleven Otari calls, about two cents.
+
+32
+00:02:10,769 --> 00:02:15,678
+Budgets work on two levels. In Otari, a monthly workspace spend ceiling and a daily
+
+33
+00:02:15,678 --> 00:02:20,155
+per-member budget. In the client, a ledger adds up the cost on every response and
+
+34
+00:02:20,155 --> 00:02:26,485
+refuses calls past the cap. If Otari answers 402, IssueScout stops cleanly and keeps
+
+35
+00:02:26,485 --> 00:02:31,451
+rule-based results. And every request carries a safety identifier plus user,
+
+36
+00:02:31,451 --> 00:02:32,860
+role and run metadata.
+
+37
+00:02:34,714 --> 00:02:36,214
+Here's the report from that run.
+
+38
+00:02:36,214 --> 00:02:42,259
+Issue 2742, a sign-in failure in private windows, is a P1 bug with three labels,
+
+39
+00:02:42,259 --> 00:02:46,395
+and the guard says safe. The related links came from Otari web search.
+
+40
+00:02:46,395 --> 00:02:51,395
+Then the drafted reply: polite, specific, and asking for exactly what's needed next.
+
+41
+00:02:53,236 --> 00:02:58,383
+And the Otari gateway trace. The classifier policy was served by Qwen3 30B on
+
+42
+00:02:58,383 --> 00:03:01,963
+Nebius; the writer policy by DeepSeek on DeepInfra.
+
+43
+00:03:01,963 --> 00:03:04,167
+The web search query is listed too.
+
+44
+00:03:04,167 --> 00:03:08,588
+That one-cent search is most of the bill; the other calls cost fractions of a cent.
+
+45
+00:03:08,588 --> 00:03:14,895
+Issue 2741, the quickstart URL, came back as a P2 bug, labeled api,
+
+46
+00:03:14,895 --> 00:03:15,804
+docs and quickstart.
+
+47
+00:03:17,636 --> 00:03:22,204
+Research is one request: otari web search, capped with max uses,
+
+48
+00:03:22,204 --> 00:03:27,795
+otari web fetch, and the DeepWiki MCP server, by workspace id or inline with a tool
+
+49
+00:03:27,795 --> 00:03:31,795
+allow-list. Otari runs the whole tool loop and returns its sources.
+
+50
+00:03:33,636 --> 00:03:38,317
+When a bug report includes a Python snippet, the reproducer runs it in Otari's code
+
+51
+00:03:38,317 --> 00:03:44,511
+execution sandbox. On python colorlog issue 143, DeepSeek installed colorlog,
+
+52
+00:03:44,511 --> 00:03:49,056
+ran the snippet, and confirmed that ANSI colors leak into the no-color formatter.
+
+53
+00:03:49,056 --> 00:03:50,408
+The bug really reproduces.
+
+54
+00:03:52,224 --> 00:03:56,917
+Chat Completions doesn't list sandbox calls, so IssueScout checks the billed cost.
+
+55
+00:03:56,917 --> 00:04:00,281
+No sandbox fee means the repro is marked unverified.
+
+56
+00:04:02,158 --> 00:04:05,613
+Fallbacks, live. I put a fake model at the front of the writer chain.
+
+57
+00:04:05,613 --> 00:04:10,101
+Otari rejects it with a 400, the client falls back to the writer policy,
+
+58
+00:04:10,101 --> 00:04:13,556
+DeepSeek serves the reply, and the trace records both.
+
+59
+00:04:13,556 --> 00:04:15,488
+That run cost three hundredths of a cent.
+
+60
+00:04:19,658 --> 00:04:22,839
+Sixteen tests run with Otari and GitHub mocked.
+
+61
+00:04:22,839 --> 00:04:25,067
+One feeds in a prompt-injection issue:
+
+62
+00:04:25,067 --> 00:04:29,521
+the guard flags it, it gets needs-human-review, and no other model sees that text.
+
+63
+00:04:31,369 --> 00:04:36,187
+To recap: open-weight models in distinct roles, routing policies and fallbacks,
+
+64
+00:04:36,187 --> 00:04:40,744
+web search and fetch, DeepWiki MCP, sandboxed code execution,
+
+65
+00:04:40,744 --> 00:04:44,926
+budgets and spend caps, per-user tagging, and an open-model guardrail,
+
+66
+00:04:44,926 --> 00:04:45,948
+each mapped to the code.
+
+67
+00:04:47,794 --> 00:04:51,403
+IssueScout is MIT licensed and dry-run by default.
+
+68
+00:04:51,403 --> 00:04:54,976
+The code is on GitHub, on the otari-hackathon branch.
+
+69
+00:04:54,976 --> 00:04:55,601
+Thanks for watching.
