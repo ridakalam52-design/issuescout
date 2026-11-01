@@ -41,7 +41,7 @@ class SkeletonTests(unittest.TestCase):
     def test_cli_dry_run_writes_reports_and_never_posts(self):
         calls = []
         with tempfile.TemporaryDirectory() as d:
-            cli.run(["triage", "o/r", "--limit", "3", "--out", d], gh=GitHub(token="", transport=fake_transport(calls)))
+            cli.run(["triage", "o/r", "--limit", "3", "--out", d, "--engine", "heuristic"], gh=GitHub(token="", transport=fake_transport(calls)))
             self.assertTrue(all(c[0] == "GET" for c in calls))
             data = json.load(open(os.path.join(d, "report.json")))
             self.assertEqual(len(data["issues"]), 3)
