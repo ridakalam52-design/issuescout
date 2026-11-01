@@ -21,8 +21,9 @@ DEFAULT_CHAINS: Dict[str, List[str]] = {
     "embedder": ["alibaba/qwen3-embedding-0.6b", "bge-m3"],
     # Tool-using researcher: Otari web search/fetch + MCP (DeepWiki).
     "researcher": ["deepseek/deepseek-v4.1-flash-1017", "alibaba/qwen3-235b-a22b-instruct-2507"],
-    # Code model that drives Otari's sandboxed code execution for repros.
-    "reproducer": ["alibaba/qwen3-coder-30b-a3b-instruct", "mistralai/codestral-latest"],
+    # Drives Otari's sandboxed code execution for repros. (Qwen3-Coder via its Bedrock
+    # route and Codestral did not reliably call otari_code_execution in testing.)
+    "reproducer": ["deepseek/deepseek-v4.1-flash-1017", "alibaba/qwen3-235b-a22b-instruct-2507"],
     # Reply writer (policy: DeepSeek V4.1 Flash -> Qwen3-235B).
     "writer": ["issuescout-writer", "deepseek/deepseek-v4.1-flash-1017", "alibaba/qwen3-235b-a22b-instruct-2507"],
 }

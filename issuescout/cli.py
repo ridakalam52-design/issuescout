@@ -20,6 +20,8 @@ def build_parser() -> argparse.ArgumentParser:
     t = sub.add_parser("triage", help="triage the newest open issues of a repo")
     t.add_argument("repo", help="owner/name")
     t.add_argument("--limit", type=int, default=5)
+    t.add_argument("--issue", type=int, action="append", default=[],
+                   help="triage specific issue number(s) instead of the newest ones (repeatable)")
     t.add_argument("--out", default="out", help="directory for report.{md,json,html}")
     t.add_argument("--engine", choices=["auto", "otari", "heuristic"], default="auto",
                    help="auto = Otari when OTARI_API_KEY is set, else heuristics")
@@ -52,7 +54,10 @@ def run(argv: Optional[List[str]] = None, gh: Optional[GitHub] = None, otari=Non
         doctor()
         return Report("", "", "doctor")
     gh = gh or GitHub()
-    issues = gh.fetch_open_issues(args.repo, args.limit)
+    if args.issue:
+        issues = [gh.fetch_issue(args.repo, n) for n in args.issue]
+    else:
+        issues = gh.fetch_open_issues(args.repo, args.limit)
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     use_otari = args.engine == "otari" or (args.engine == "auto" and (otari is not None or os.environ.get("OTARI_API_KEY")))
     if use_otari:
@@ -63,7 +68,8 @@ def run(argv: Optional[List[str]] = None, gh: Optional[GitHub] = None, otari=Non
         triager = OtariTriager(client, args.repo, repro=not args.no_repro, research=not args.no_research)
         triages = triager.triage_all(issues)
         rep = Report(repo=args.repo, generated_at=now, engine="otari", triages=triages,
-                     spend_usd=client.ledger.spent_usd, notes=triager.notes)
+                     spend_usd=client.ledger.spent_usd, notes=triager.notes,
+                     batch_trace=[r.as_dict() for r in client.ledger.calls if r.role == "embedder"])
     else:
         rep = Report(repo=args.repo, generated_at=now, engine="heuristic", triages=heuristics.triage_all(issues))
     for p in report.write_all(rep, args.out):

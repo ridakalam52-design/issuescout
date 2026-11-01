@@ -27,6 +27,8 @@ def to_markdown(report: Report) -> str:
         lines.append(f"\nModel + tool spend for this run: **${report.spend_usd:.4f}**")
     for n in report.notes:
         lines.append(f"\n_Note: {n}_")
+    for b in report.batch_trace:
+        lines.append(f"\nBatch step `{b.get('role')}`: {b.get('requested')} served by {b.get('served_model', '-')} ({b.get('provider', '-')}), ${b.get('cost_usd', 0)}")
     lines += ["", "| # | Title | Category | Priority | Labels | Possible duplicates |", "|---|---|---|---|---|---|"]
     for t in report.triages:
         d = ", ".join(f"#{x.number} ({x.score:.2f})" for x in t.duplicates) or "-"
@@ -41,16 +43,20 @@ def to_markdown(report: Report) -> str:
         if t.guard:
             lines.append(f"- **Guardrail:** {t.guard.get('verdict', '-')} ({t.guard.get('model', '')})")
         if t.repro:
-            lines.append(f"- **Repro (sandbox):** {t.repro.get('summary', '-')}")
+            state = {True: "reproduced", False: "did not reproduce"}.get(t.repro.get("reproduced"), "inconclusive")
+            lines.append(f"- **Repro (Otari sandbox, {t.repro.get('model', '')}):** {state}: {t.repro.get('summary', '-')}")
         if t.related:
             lines.append("- **Related docs / known fixes:**")
             for r in t.related:
-                lines.append(f"  - [{r.get('title') or r.get('url')}]({r.get('url')}): {r.get('why', '')}")
+                src = f" _(via {r['source']})_" if r.get("source") else ""
+                lines.append(f"  - [{r.get('title') or r.get('url')}]({r.get('url')}): {r.get('why', '')}{src}")
         lines += ["", "**Draft maintainer reply:**", "", _quote(t.reply)]
         if t.trace:
-            lines += ["", "<details><summary>Gateway trace</summary>", "", "| role | requested | served by | provider | fallback | cost USD |", "|---|---|---|---|---|---|"]
+            lines += ["", "<details><summary>Otari gateway trace</summary>", "", "| role | requested (model or routing policy) | served by | provider | fallback | Otari tools | cost USD |", "|---|---|---|---|---|---|---|"]
             for s in t.trace:
-                lines.append(f"| {s.get('role')} | {s.get('requested')} | {s.get('served_model', '')} | {s.get('provider', '')} | {s.get('fallback', '')} | {s.get('cost_usd', '')} |")
+                tools = "; ".join(f"{c.get('type')}: {c.get('query') or c.get('url') or ''}" for c in s.get("tool_calls", [])) or "-"
+                err = f" (error: {s['error']})" if s.get("error") else ""
+                lines.append(f"| {s.get('role')} | {s.get('requested')}{err} | {s.get('served_model', '')} | {s.get('provider', '')} | {s.get('fallback', '')} | {tools.replace('|', '/')} | {s.get('cost_usd', '')} |")
             lines += ["", "</details>"]
     return "\n".join(lines) + "\n"
 
@@ -86,14 +92,17 @@ def to_html(report: Report) -> str:
         if t.guard:
             parts.append(f"<p><b>Guardrail:</b> {e(str(t.guard.get('verdict')))} <span class='meta'>({e(str(t.guard.get('model', '')))})</span></p>")
         if t.repro:
-            parts.append(f"<p><b>Repro (sandbox):</b> {e(str(t.repro.get('summary', '')))}</p>")
+            state = {True: "reproduced", False: "did not reproduce"}.get(t.repro.get("reproduced"), "inconclusive")
+            parts.append(f"<p><b>Repro (Otari sandbox, {e(str(t.repro.get('model', '')))}):</b> {state}: {e(str(t.repro.get('summary', '')))}</p>")
         if t.related:
             parts.append("<p><b>Related docs / known fixes:</b></p><ul>" + "".join(
                 f"<li><a href='{e(r.get('url', ''))}'>{e(r.get('title') or r.get('url', ''))}</a> {e(r.get('why', ''))}</li>" for r in t.related) + "</ul>")
         parts.append(f"<p><b>Draft reply</b></p><blockquote>{e(t.reply)}</blockquote>")
         if t.trace:
-            parts.append("<details><summary>Gateway trace</summary><table><tr><th>role</th><th>requested</th><th>served by</th><th>provider</th><th>fallback</th><th>cost</th></tr>"
-                         + "".join(f"<tr><td>{e(str(s.get('role')))}</td><td>{e(str(s.get('requested')))}</td><td>{e(str(s.get('served_model', '')))}</td><td>{e(str(s.get('provider', '')))}</td><td>{e(str(s.get('fallback', '')))}</td><td>{e(str(s.get('cost_usd', '')))}</td></tr>" for s in t.trace)
+            def _tools(s):
+                return "; ".join(f"{c.get('type')}: {c.get('query') or c.get('url') or ''}" for c in s.get("tool_calls", [])) or "-"
+            parts.append("<details><summary>Otari gateway trace</summary><table><tr><th>role</th><th>requested (model or routing policy)</th><th>served by</th><th>provider</th><th>fallback</th><th>Otari tools</th><th>cost USD</th></tr>"
+                         + "".join(f"<tr><td>{e(str(s.get('role')))}</td><td>{e(str(s.get('requested')))}</td><td>{e(str(s.get('served_model', '')))}</td><td>{e(str(s.get('provider', '')))}</td><td>{e(str(s.get('fallback', '')))}</td><td>{e(_tools(s))}</td><td>{e(str(s.get('cost_usd', '')))}</td></tr>" for s in t.trace)
                          + "</table></details>")
         parts.append("</div>")
     parts.append("<p class='meta'>Made with IssueScout · drafts only, a human maintainer decides.</p></body></html>")

@@ -152,8 +152,15 @@ class OtariTests(unittest.TestCase):
             rep = cli.run(["triage", "o/r", "--limit", "1", "--out", d, "--no-repro"], gh=gh, otari=client(gw, ledger=Ledger(0.5)))
             self.assertEqual(rep.engine, "otari")
             md = open(os.path.join(d, "report.md")).read()
-            self.assertIn("Gateway trace", md)
+            self.assertIn("gateway trace", md)
             self.assertNotIn("test-key", md + open(os.path.join(d, "report.json")).read())
+
+    def test_unbilled_repro_is_marked_unverified(self):
+        def gw(method, url, data, headers):
+            return ok('{"ran": true, "reproduced": true, "summary": "looks broken"}', cost="0.0003")
+        r = OtariTriager(client(gw), "o/r").reproduce(BUG, "print(1)")
+        self.assertIsNone(r["reproduced"])
+        self.assertFalse(r["sandbox_billed"])
 
     def test_helpers(self):
         self.assertAlmostEqual(cosine([1, 0], [1, 0]), 1.0)

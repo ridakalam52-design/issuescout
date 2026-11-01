@@ -55,6 +55,12 @@ class GitHub:
             page += 1
         return issues
 
+    def fetch_issue(self, repo: str, number: int) -> Issue:
+        raw = self.transport("GET", f"{API}/repos/{repo}/issues/{int(number)}", None, self._headers())
+        if "pull_request" in (raw or {}):
+            raise ValueError(f"#{number} is a pull request")
+        return Issue.from_github(raw)
+
     def apply_triage(self, repo: str, number: int, labels: List[str], comment: str) -> None:
         if not self.token:
             raise RuntimeError("--apply needs GITHUB_TOKEN")

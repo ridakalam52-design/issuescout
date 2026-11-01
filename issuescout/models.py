@@ -67,6 +67,7 @@ class Report:
     triages: List[Triage] = field(default_factory=list)
     spend_usd: float = 0.0
     notes: List[str] = field(default_factory=list)
+    batch_trace: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -75,5 +76,6 @@ class Report:
             "engine": self.engine,
             "spend_usd": round(self.spend_usd, 6),
             "notes": self.notes,
+            "batch_trace": self.batch_trace,
             "issues": [t.to_dict() for t in self.triages],
         }
